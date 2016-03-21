@@ -3,15 +3,9 @@
 #include <list>
 
 
-const int WIDTH = 10;
-const int HEIGHT = 10;
-const int START_POSITION_Y = 1;
 const double START_POSITION_X_LEFT = 0.1;
 const double START_POSITION_X_RIGHT = 8.9;
-const double DIM = 0.4;
 const double SNAKE_WIDTH = 0.2;
-const char* L1_STR = "L1";
-const char* L2_STR = "L2";
 
 const int UP = 2;
 const int DOWN = 4;
@@ -20,9 +14,9 @@ const int RIGHT = 3;
 
 char szClassName[] = "Snakes";
 HWND anotherWindow;
-int msgID = RegisterWindowMessage("CHANGE_SCREEN_MSG") ;
-int connectMsgId = RegisterWindowMessage("Snakes-connect");
-int connectedMsgId = RegisterWindowMessage("Snakes-connected");
+int msg = RegisterWindowMessage("CHANGE_SCREEN_MSG") ;
+int connectMsg = RegisterWindowMessage("Snakes-connect");
+int connectedMsg = RegisterWindowMessage("Snakes-connected");
 bool connected = false;
 UINT_PTR timerPtr;
 
@@ -38,27 +32,17 @@ typedef struct Snake
     Node start;
     double width;
     std::list<Node> body;	// pierwsze współrzędne to głowa
-    HWND hwnd;
 } Snake;
 
 Snake snake;
-Snake babySnakes[10];
 int direction = DOWN;
-boolean playing = FALSE;
+bool playing = false;
 
 void InitializeSnake(Snake *);
-void InitializeBabySnakes();
 void PaintSnake(HDC*, RECT, BOOL visibility = TRUE);
 int CountOfPixels(double);
 void changeDirection(int newDirection);
-boolean move(HWND hwnd, int messageID, RECT rect);
-
-int LEAVE_1 = RegisterWindowMessage(L1_STR);
-int LEAVE_2 = RegisterWindowMessage(L2_STR);
-int leave1count = 0;
-int leave2count = 0;
-
-char* TableSide = "right";
+bool move(HWND hwnd, int messageID, RECT rect);
 
 LONG WINAPI WndProc1(HWND, UINT, WPARAM, LPARAM);
 
@@ -113,22 +97,11 @@ LRESULT CALLBACK WndProc1(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     SetTimer(hwnd, ID_TIMER, 50, NULL);
     GetClientRect(hwnd, &rect);
 
-    if (!connected && (HWND) wParam != hwnd && message == connectMsgId)
+    if (message == msg)
     {
-        connected = true;
-        playing = TRUE;
-        anotherWindow = (HWND) wParam;
-        PostMessageA(anotherWindow, connectedMsgId, (WPARAM) hwnd, 0);
-    }
-    else if (message == connectedMsgId) {
-        connected = true;
-        playing = TRUE;
-        anotherWindow = (HWND) wParam;
-    }
-    else
-    if (message == msgID)
-    {
-        playing = TRUE;
+        playing = true;
+        snake.body.clear();
+        InitializeSnake(&snake);
         //snake.dy = lParam;
         PaintSnake(&hdc, rect, true);
         timerPtr = SetTimer(hwnd, ID_TIMER, 50, NULL);
@@ -137,13 +110,25 @@ LRESULT CALLBACK WndProc1(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             MessageBox(hwnd, "Cannot create timer!", "Fatal error!", MB_ICONSTOP);
         }
     }
+    else if (!connected && (HWND) wParam != hwnd && message == connectMsg)
+    {
+        connected = true;
+        playing = TRUE;
+        anotherWindow = (HWND) wParam;
+        PostMessageA(anotherWindow, connectedMsg, (WPARAM) hwnd, 0);
+    }
+    else if (message == connectedMsg) {
+        connected = true;
+        playing = TRUE;
+        anotherWindow = (HWND) wParam;
+    }
     else
         switch (message)
         {
             case WM_CREATE:
                 if (!connected)
                 {
-                    PostMessageA(HWND_BROADCAST, connectMsgId, (WPARAM) hwnd, 0);
+                    PostMessageA(HWND_BROADCAST, connectMsg, (WPARAM) hwnd, 0);
                 }
             case WM_PAINT:
                 hdc = BeginPaint(hwnd, &ps);
@@ -169,16 +154,17 @@ LRESULT CALLBACK WndProc1(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         changeDirection(UP);
                         break;
                 }
-                move(anotherWindow, msgID, rect);
+                move(anotherWindow, msg, rect);
                 PaintSnake(&hdc, rect, TRUE);
                 ReleaseDC(hwnd, hdc);
 
             case WM_TIMER:
                 hdc = GetDC(hwnd);
                 PaintSnake(&hdc, rect, FALSE);
-                move(anotherWindow, msgID, rect);
-                if(playing)
+                if(playing) {
+                    move(anotherWindow, msg, rect);
                     PaintSnake(&hdc, rect, TRUE);
+                }
                 else
                     KillTimer(hwnd, timerPtr);
                 ReleaseDC(hwnd, hdc);
@@ -255,11 +241,11 @@ void stepOn(double x, double y)
     snake.body.pop_back();
 }
 
-boolean move(HWND anotherWindow, int messageID, RECT rect)		// false- gra przegrana
+bool move(HWND anotherWindow, int messageID, RECT rect)		// false- gra przegrana
 {
     Node head = (Node)snake.body.front();		//biore wspolrzedne glowy
-    int x = head.x;
-    int y = head.y;
+    double x = head.x;
+    double y = head.y;
     switch (direction)
     {
     case UP:
@@ -283,8 +269,9 @@ boolean move(HWND anotherWindow, int messageID, RECT rect)		// false- gra przegr
     else
     if (x <= rect.left)
     {
-        playing=FALSE;
+        playing=false;
         PostMessage(anotherWindow, messageID, 0, y);
+        return false;
     }
 
     stepOn(x, y);

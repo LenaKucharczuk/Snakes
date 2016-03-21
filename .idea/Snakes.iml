@@ -10,16 +10,16 @@
     <orderEntry type="module-library">
       <library name="Header Search Paths">
         <CLASSES>
-          <root url="file://C:/MinGW/lib/gcc/mingw32/4.8.1/include" />
-          <root url="file://C:/MinGW/lib/gcc/mingw32/4.8.1/include-fixed" />
-          <root url="file://C:/MinGW/mingw32/include" />
           <root url="file://C:/MinGW/include" />
+          <root url="file://C:/MinGW/mingw32/include" />
+          <root url="file://C:/MinGW/lib/gcc/mingw32/4.7.1/include" />
+          <root url="file://C:/MinGW/lib/gcc/mingw32/4.7.1/include-fixed" />
         </CLASSES>
         <SOURCES>
-          <root url="file://C:/MinGW/lib/gcc/mingw32/4.8.1/include" />
-          <root url="file://C:/MinGW/lib/gcc/mingw32/4.8.1/include-fixed" />
-          <root url="file://C:/MinGW/mingw32/include" />
           <root url="file://C:/MinGW/include" />
+          <root url="file://C:/MinGW/mingw32/include" />
+          <root url="file://C:/MinGW/lib/gcc/mingw32/4.7.1/include" />
+          <root url="file://C:/MinGW/lib/gcc/mingw32/4.7.1/include-fixed" />
         </SOURCES>
       </library>
     </orderEntry>
